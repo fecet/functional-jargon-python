@@ -619,7 +619,11 @@ Lifting is when you take a value and put it into an object like a [Functor](#fun
 Some implementations have a function called `lift`, or `liftA2` to make it easier to run functions on functors.
 
 ```python
->>> def lift(value):
+>>> from typing import List, TypeVar
+>>>
+>>> _LiftType = TypeVar('_LiftType')
+>>>
+>>> def lift(value: _LiftType) -> List[_LiftType]:
 ...     return [value]
 ...
 >>> assert list(map(abs, lift(-2))) == [2]
@@ -628,7 +632,7 @@ Some implementations have a function called `lift`, or `liftA2` to make it easie
 Lifting a one-argument function and applying it does the same thing as `map`.
 
 ```python
->>> from typing import Callable, Iterable, TypeVar
+>>> from typing import Callable, Iterable, List, TypeVar
 >>>
 >>> _Left = TypeVar('_Left')
 >>> _Right = TypeVar('_Right')
@@ -636,9 +640,9 @@ Lifting a one-argument function and applying it does the same thing as `map`.
 >>>
 >>> def lift_a2(
 ...     function: Callable[[_Left, _Right], _ResultType],
-... ) -> Callable[[Iterable[_Left], Iterable[_Right]], list[_ResultType]]:
+... ) -> Callable[[Iterable[_Left], Iterable[_Right]], List[_ResultType]]:
 ...     return lambda first, second: [
-...         function(left, right) for left in first for right in second
+...         function(left, right) for left, right in zip(first, second)
 ...     ]
 ...
 >>> add = lambda left, right: left + right
@@ -909,7 +913,7 @@ A homomorphism is just a structure preserving map. In fact, a functor is just a 
 A `reduce_right` function that applies a function against an accumulator and each value of the array (from right-to-left) to reduce it to a single value.
 
 ```python
->>> from typing import Iterable, TypeVar
+>>> from typing import Callable, Iterable, TypeVar
 >>>
 >>> _FoldType = TypeVar('_FoldType')
 >>> _AccType = TypeVar('_AccType')
@@ -917,7 +921,7 @@ A `reduce_right` function that applies a function against an accumulator and eac
 >>> def fold_right(
 ...     items: Iterable[_FoldType],
 ...     initial: _AccType,
-...     function,
+...     function: Callable[[_FoldType, _AccType], _AccType],
 ... ) -> _AccType:
 ...     result = initial
 ...     for item in reversed(list(items)):
@@ -932,7 +936,9 @@ A `reduce_right` function that applies a function against an accumulator and eac
 An `unfold` function. An `unfold` is the opposite of `fold` (`reduce`). It generates a list from a single value.
 
 ```python
->>> def unfold(seed: int, stop) -> list[int]:
+>>> from typing import Callable, List
+>>>
+>>> def unfold(seed: int, stop: Callable[[int], bool]) -> List[int]:
 ...     values = []
 ...     current = seed
 ...     while not stop(current):
@@ -958,12 +964,17 @@ A function just like `reduce_right`. However, there's a difference:
 In paramorphism, your reducer's arguments are the current value, the reduction of all previous values, and the list of values that formed that reduction.
 
 ```python
->>> def para(items: list[int], initial: int, function):
-...     result = initial
-...     for index, item in enumerate(items):
-...         remainder = items[index:]
-...         result = function(item, remainder, result)
-...     return result
+>>> from typing import Callable, List
+>>>
+>>> def para(
+...     items: List[int],
+...     initial: int,
+...     function: Callable[[int, List[int], int], int],
+... ) -> int:
+...     if not items:
+...         return initial
+...     head, *tail = items
+...     return function(head, tail, para(tail, initial, function))
 ...
 >>> assert para([1, 2, 3], 0, lambda current, rest, acc: acc + current + len(rest)) == 9
 ```
@@ -973,7 +984,9 @@ In paramorphism, your reducer's arguments are the current value, the reduction o
 it's the opposite of paramorphism, just as anamorphism is the opposite of catamorphism. Whereas with paramorphism, you combine with access to the accumulator and what has been accumulated, apomorphism lets you `unfold` with the potential to return early.
 
 ```python
->>> def apo(seed: int, step):
+>>> from typing import Callable, Optional, Tuple
+>>>
+>>> def apo(seed: int, step: Callable[[int], Tuple[int, Optional[int]]]):
 ...     result = []
 ...     current = seed
 ...     while current is not None:
@@ -1071,7 +1084,9 @@ Lenses are also composable. This allows easy immutable updates to deeply nested 
 Type signatures describe the types a function accepts and returns.
 
 ```python
->>> def head(items: list[int]) -> int:
+>>> from typing import List
+>>>
+>>> def head(items: List[int]) -> int:
 ...     return items[0]
 ...
 >>> assert head([1, 2, 3]) == 1
@@ -1141,9 +1156,10 @@ Option is a [sum type](#sum-type) with two cases often called `Some` and `None`.
 Option is useful for composing functions that might not return a value.
 
 ```python
+>>> from typing import List
 >>> from returns.maybe import Maybe, Nothing, Some
 >>>
->>> def safe_head(items: list[int]) -> Maybe[int]:
+>>> def safe_head(items: List[int]) -> Maybe[int]:
 ...     if not items:
 ...         return Nothing
 ...     return Some(items[0])
@@ -1159,10 +1175,12 @@ Option is useful for composing functions that might not return a value.
 A __function__ `f :: A => B` is an expression - often called arrow or lambda expression - with __exactly one (immutable)__ parameter of type `A` and __exactly one__ return value of type `B`. That value depends entirely on the argument, making functions context-independent, or [referentially transparent](#referential-transparency). What is implied here is that a function must not produce any hidden [side effects](#side-effects) - a function is always [pure](#purity), by definition. These properties make functions pleasant to work with: they are entirely deterministic and therefore predictable. Functions enable working with code as data, abstracting over behaviour:
 
 ```python
+>>> from typing import Callable
+>>>
 >>> def add_one(value: int) -> int:
 ...     return value + 1
 ...
->>> def apply(function, value):
+>>> def apply(function: Callable[[int], int], value: int) -> int:
 ...     return function(value)
 ...
 >>> assert apply(add_one, 1) == 2
@@ -1173,7 +1191,9 @@ A __function__ `f :: A => B` is an expression - often called arrow or lambda exp
 A partial function is a [function](#function) which is not defined for all arguments - it might return an unexpected result or may never terminate. Partial functions add cognitive overhead, they are harder to reason about and can lead to runtime errors. Some examples:
 
 ```python
->>> def head(items: list[int]) -> int:
+>>> from typing import List
+>>>
+>>> def head(items: List[int]) -> int:
 ...     return items[0]
 ...
 >>> assert head([1, 2, 3]) == 1
@@ -1189,9 +1209,10 @@ Partial functions are dangerous as they need to be treated with great caution. Y
 Fortunately a partial function can be converted to a regular (or total) one. We can provide default values or use guards to deal with inputs for which the (previously) partial function is undefined. Utilizing the [`Option`](#option) type, we can yield either `Some(value)` or `None` where we would otherwise have behaved unexpectedly:
 
 ```python
+>>> from typing import List
 >>> from returns.maybe import Maybe, Nothing, Some
 >>>
->>> def safe_head(items: list[int]) -> Maybe[int]:
+>>> def safe_head(items: List[int]) -> Maybe[int]:
 ...     if not items:
 ...         return Nothing
 ...     return Some(items[0])
