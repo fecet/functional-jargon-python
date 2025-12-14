@@ -219,15 +219,12 @@ The functions like `reduce`, `map` and `filter` are good examples of __HOF__, th
 We can create our own __HOF__, see the example below:
 
 ```python
->>> from typing import Callable, TypeVar
-
->>> _ValueType = TypeVar('_ValueType')
->>> _ReturnType = TypeVar('_ReturnType')
+>>> from typing import Callable
 
 >>> def get_transform_function() -> Callable[[str], int]:
 ...     return int
 
->>> def transform(
+>>> def transform[_ValueType, _ReturnType](
 ...     transform_function: Callable[[_ValueType], _ReturnType],
 ...     value_to_transform: _ValueType,
 ... ) -> _ReturnType:
@@ -394,13 +391,9 @@ You can also create a third function
 that will have an input of the first one and an output of the second one:
 
 ```python
->>> from typing import Callable, TypeVar
+>>> from typing import Callable
 
->>> _FirstType = TypeVar('_FirstType')
->>> _SecondType = TypeVar('_SecondType')
->>> _ThirdType = TypeVar('_ThirdType')
-
->>> def compose(
+>>> def compose[_FirstType, _SecondType, _ThirdType](
 ...     first: Callable[[_FirstType], _SecondType],
 ...     second: Callable[[_SecondType], _ThirdType],
 ... ) -> Callable[[_FirstType], _ThirdType]:
@@ -427,12 +420,9 @@ __Further reading__
 At any given point in a program, the part of the code that's yet to be executed is known as a continuation.
 
 ```python
->>> from typing import Callable, TypeVar
+>>> from typing import Callable
 >>>
->>> _Value = TypeVar('_Value')
->>> _Result = TypeVar('_Result')
->>>
->>> def with_continuation(
+>>> def with_continuation[_Value, _Result](
 ...     value: _Value,
 ...     continuation: Callable[[_Value], _Result],
 ... ) -> _Result:
@@ -554,16 +544,12 @@ To be a valid category 3 rules must be met:
 Since these rules govern composition at very abstract level, category theory is great at uncovering new ways of composing things.
 
 ```python
->>> from typing import Callable, TypeVar
+>>> from typing import Callable
 >>>
->>> _TypeA = TypeVar('_TypeA')
->>> _TypeB = TypeVar('_TypeB')
->>> _TypeC = TypeVar('_TypeC')
->>>
->>> def identity(value: _TypeA) -> _TypeA:
+>>> def identity[_TypeA](value: _TypeA) -> _TypeA:
 ...     return value
 ...
->>> def compose(
+>>> def compose[_TypeA, _TypeB, _TypeC](
 ...     first: Callable[[_TypeA], _TypeB],
 ...     second: Callable[[_TypeB], _TypeC],
 ... ) -> Callable[[_TypeA], _TypeC]:
@@ -619,11 +605,7 @@ Lifting is when you take a value and put it into an object like a [Functor](#fun
 Some implementations have a function called `lift`, or `liftA2` to make it easier to run functions on functors.
 
 ```python
->>> from typing import TypeVar
->>>
->>> _LiftType = TypeVar('_LiftType')
->>>
->>> def lift(value: _LiftType) -> list[_LiftType]:
+>>> def lift[_LiftType](value: _LiftType) -> list[_LiftType]:
 ...     return [value]
 ...
 >>> assert list(map(abs, lift(-2))) == [2]
@@ -632,13 +614,9 @@ Some implementations have a function called `lift`, or `liftA2` to make it easie
 Lifting a one-argument function and applying it does the same thing as `map`.
 
 ```python
->>> from typing import Callable, Iterable, TypeVar
+>>> from typing import Callable, Iterable
 >>>
->>> _Left = TypeVar('_Left')
->>> _Right = TypeVar('_Right')
->>> _ResultType = TypeVar('_ResultType')
->>>
->>> def lift_a2(
+>>> def lift_a2[_Left, _Right, _ResultType](
 ...     function: Callable[[_Left, _Right], _ResultType],
 ... ) -> Callable[[Iterable[_Left], Iterable[_Right]], list[_ResultType]]:
 ...     return lambda first, second: [
@@ -756,18 +734,15 @@ Sometimes `Functor` can be called `Mappable` to its `.map` method.
 You can have a look at the real-life [`Functor` interface](https://github.com/dry-python/returns/blob/master/returns/interfaces/mappable.py):
 
 ```python
->>> from typing import Callable, TypeVar
+>>> from typing import Callable
 >>> from returns.interfaces.mappable import Mappable1 as Functor
 >>> from returns.primitives.hkt import SupportsKind1
 
->>> _FirstType = TypeVar('_FirstType')
->>> _NewFirstType = TypeVar('_NewFirstType')
-
->>> class Box(SupportsKind1['Box', _FirstType], Functor[_FirstType]):
+>>> class Box[_FirstType](SupportsKind1['Box', _FirstType], Functor[_FirstType]):
 ...     def __init__(self, inner_value: _FirstType) -> None:
 ...         self._inner_value = inner_value
 ...
-...     def map(
+...     def map[_NewFirstType](
 ...         self,
 ...         function: Callable[[_FirstType], _NewFirstType],
 ...     ) -> 'Box[_NewFirstType]':
@@ -847,19 +822,16 @@ A monad is an [Applicative Functor](#applicative-functor) with `bind` method.
 An object that has `extract` and `extend` functions.
 
 ```python
->>> from typing import Callable, Generic, TypeVar
+>>> from typing import Callable, Generic
 >>>
->>> _CoValue = TypeVar('_CoValue')
->>> _NewCoValue = TypeVar('_NewCoValue')
->>>
->>> class CoIdentity(Generic[_CoValue]):
+>>> class CoIdentity[_CoValue](Generic[_CoValue]):
 ...     def __init__(self, value: _CoValue) -> None:
 ...         self._value = value
 ...
 ...     def extract(self) -> _CoValue:
 ...         return self._value
 ...
-...     def extend(
+...     def extend[_NewCoValue](
 ...         self,
 ...         function: Callable[['CoIdentity[_CoValue]'], _NewCoValue],
 ...     ) -> 'CoIdentity[_NewCoValue]':
@@ -913,12 +885,9 @@ A homomorphism is just a structure preserving map. In fact, a functor is just a 
 A `reduce_right` function that applies a function against an accumulator and each value of the array (from right-to-left) to reduce it to a single value.
 
 ```python
->>> from typing import Callable, Iterable, TypeVar
+>>> from typing import Callable, Iterable
 >>>
->>> _FoldType = TypeVar('_FoldType')
->>> _AccType = TypeVar('_AccType')
->>>
->>> def fold_right(
+>>> def fold_right[_FoldType, _AccType](
 ...     items: Iterable[_FoldType],
 ...     initial: _AccType,
 ...     function: Callable[[_FoldType, _AccType], _AccType],
