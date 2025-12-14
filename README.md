@@ -953,9 +953,9 @@ In paramorphism, your reducer's arguments are the current value, the reduction o
 it's the opposite of paramorphism, just as anamorphism is the opposite of catamorphism. Whereas with paramorphism, you combine with access to the accumulator and what has been accumulated, apomorphism lets you `unfold` with the potential to return early.
 
 ```python
->>> from typing import Callable, Optional, Tuple
+>>> from typing import Callable
 >>>
->>> def apo(seed: int, step: Callable[[int], Tuple[int, Optional[int]]]):
+>>> def apo(seed: int, step: Callable[[int], tuple[int, int | None]]):
 ...     result = []
 ...     current = seed
 ...     while current is not None:
