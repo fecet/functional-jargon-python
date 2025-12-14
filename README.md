@@ -17,48 +17,48 @@ __Table of Contents__
 * [Arity](#arity)
 * [IO](#io)
 * [Higher-Order Functions (HOF)](#higher-order-functions-hof)
-* [Closure (TODO)](#closure-todo)
+* [Closure](#closure)
 * [Partial Application](#partial-application)
 * [Currying](#currying)
 * [Function Composition](#function-composition)
-* [Continuation (TODO)](#continuation-todo)
+* [Continuation](#continuation)
 * [Point-Free Style](#point-free-style)
 * [Predicate](#predicate)
-* [Contracts (TODO)](#contracts-todo)
-* [Category (TODO)](#category-todo)
-* [Value (TODO)](#value-todo)
-* [Constant (TODO)](#constant-todo)
-* [Lift (TODO)](#lift-todo)
-* [Referential Transparency (TODO)](#referential-transparency-todo)
-* [Equational Reasoning (TODO)](#equational-reasoning-todo)
-* [Lambda (TODO)](#lambda-todo)
-* [Lambda Calculus (TODO)](#lambda-calculus-todo)
-* [Lazy evaluation (TODO)](#lazy-evaluation-todo)
+* [Contracts](#contracts)
+* [Category](#category)
+* [Value](#value)
+* [Constant](#constant)
+* [Lift](#lift)
+* [Referential Transparency](#referential-transparency)
+* [Equational Reasoning](#equational-reasoning)
+* [Lambda](#lambda)
+* [Lambda Calculus](#lambda-calculus)
+* [Lazy evaluation](#lazy-evaluation)
 * [Functor](#functor)
 * [Applicative Functor](#applicative-functor)
 * [Monoid](#monoid)
-* [Monad (TODO)](#monad-todo)
-* [Comonad (TODO)](#comonad-todo)
-* [Morphism (TODO)](#morphism-todo)
-  * [Endomorphism (TODO)](#endomorphism-todo)
-  * [Isomorphism (TODO)](#isomorphism-todo)
-  * [Homomorphism (TODO)](#homomorphism-todo)
-  * [Catamorphism (TODO)](#catamorphism-todo)
-  * [Anamorphism (TODO)](#anamorphism-todo)
-  * [Hylomorphism (TODO)](#hylomorphism-todo)
-  * [Paramorphism (TODO)](#paramorphism-todo)
-  * [Apomorphism (TODO)](#apomorphism-todo)
-* [Setoid (TODO)](#setoid-todo)
-* [Semigroup (TODO)](#semigroup-todo)
-* [Foldable (TODO)](#foldable-todo)
-* [Lens (TODO)](#lens-todo)
-* [Type Signatures (TODO)](#type-signatures-todo)
-* [Algebraic data type (TODO)](#algebraic-data-type-todo)
-  * [Sum type (TODO)](#sum-type-todo)
-  * [Product type (TODO)](#product-type-todo)
-* [Option (TODO)](#option-todo)
-* [Function (TODO)](#function-todo)
-* [Partial function (TODO)](#partial-function-todo)
+* [Monad](#monad)
+* [Comonad](#comonad)
+* [Morphism](#morphism)
+  * [Endomorphism](#endomorphism)
+  * [Isomorphism](#isomorphism)
+  * [Homomorphism](#homomorphism)
+  * [Catamorphism](#catamorphism)
+  * [Anamorphism](#anamorphism)
+  * [Hylomorphism](#hylomorphism)
+  * [Paramorphism](#paramorphism)
+  * [Apomorphism](#apomorphism)
+* [Setoid](#setoid)
+* [Semigroup](#semigroup)
+* [Foldable](#foldable)
+* [Lens](#lens)
+* [Type Signatures](#type-signatures)
+* [Algebraic data type](#algebraic-data-type)
+  * [Sum type](#sum-type)
+  * [Product type](#product-type)
+* [Option](#option)
+* [Function](#function)
+* [Partial function](#partial-function)
 
 
 <!-- /RM -->
@@ -219,15 +219,12 @@ The functions like `reduce`, `map` and `filter` are good examples of __HOF__, th
 We can create our own __HOF__, see the example below:
 
 ```python
->>> from typing import Callable, TypeVar
-
->>> _ValueType = TypeVar('_ValueType')
->>> _ReturnType = TypeVar('_ReturnType')
+>>> from typing import Callable
 
 >>> def get_transform_function() -> Callable[[str], int]:
 ...     return int
 
->>> def transform(
+>>> def transform[_ValueType, _ReturnType](
 ...     transform_function: Callable[[_ValueType], _ReturnType],
 ...     value_to_transform: _ValueType,
 ... ) -> _ReturnType:
@@ -261,7 +258,7 @@ __Further reading__:
 * [`IO` and `@impure` docs](https://returns.readthedocs.io/en/latest/pages/io.html)
 
 
-## Closure (TODO)
+## Closure
 
 A closure is a way of accessing a variable outside its scope.
 Formally, a closure is a technique for implementing lexically scoped named binding. It is a way of storing a function with an environment.
@@ -271,7 +268,15 @@ ie. they allow referencing a scope after the block in which the variables were d
 
 
 ```python
-# TODO
+>>> def make_multiplier(factor: int):
+...     def multiply(value: int) -> int:
+...         return value * factor
+...     return multiply
+...
+>>> double = make_multiplier(2)
+>>> triple = make_multiplier(3)
+>>> assert double(5) == 10
+>>> assert triple(4) == 12
 ```
 
 Lexical scoping is the reason why it is able to find the values of x and add - the private variables of the parent which has finished executing. This value is called a Closure.
@@ -386,13 +391,9 @@ You can also create a third function
 that will have an input of the first one and an output of the second one:
 
 ```python
->>> from typing import Callable, TypeVar
+>>> from typing import Callable
 
->>> _FirstType = TypeVar('_FirstType')
->>> _SecondType = TypeVar('_SecondType')
->>> _ThirdType = TypeVar('_ThirdType')
-
->>> def compose(
+>>> def compose[_FirstType, _SecondType, _ThirdType](
 ...     first: Callable[[_FirstType], _SecondType],
 ...     second: Callable[[_SecondType], _ThirdType],
 ... ) -> Callable[[_FirstType], _ThirdType]:
@@ -414,18 +415,32 @@ __Further reading__
 * [`compose` docs](https://returns.readthedocs.io/en/latest/pages/functions.html#compose)
 
 
-## Continuation (TODO)
+## Continuation
 
 At any given point in a program, the part of the code that's yet to be executed is known as a continuation.
 
 ```python
-# TODO
+>>> from typing import Callable
+>>>
+>>> def with_continuation[_Value, _Result](
+...     value: _Value,
+...     continuation: Callable[[_Value], _Result],
+... ) -> _Result:
+...     return continuation(value)
+...
+>>> assert with_continuation('hi', str.upper) == 'HI'
 ```
 
 Continuations are often seen in asynchronous programming when the program needs to wait to receive data before it can continue. The response is often passed off to the rest of the program, which is the continuation, once it's been received.
 
 ```python
-# TODO
+>>> def greet_async(name: str, callback: Callable[[str], None]) -> None:
+...     message = f'Hello, {name}'
+...     callback(message)
+...
+>>> messages = []
+>>> greet_async('Jane', messages.append)
+>>> assert messages == ['Hello, Jane']
 ```
 
 
@@ -492,15 +507,24 @@ __Futher reading__
 * [`cond` docs](https://returns.readthedocs.io/en/latest/pages/pointfree.html#cond)
 
 
-## Contracts (TODO)
+## Contracts
 
 A contract specifies the obligations and guarantees of the behavior from a function or expression at runtime. This acts as a set of rules that are expected from the input and output of a function or expression, and errors are generally reported whenever a contract is violated.
 
 ```python
-# TODO
+>>> def positive_only(number: int) -> int:
+...     if number <= 0:
+...         raise ValueError('Number must be positive')
+...     return number
+...
+>>> assert positive_only(3) == 3
+>>> try:
+...     positive_only(0)
+... except ValueError as error:
+...     assert str(error) == 'Number must be positive'
 ```
 
-## Category (TODO)
+## Category
 
 A category in category theory is a collection of objects and morphisms between them. In programming, typically types
 act as the objects and functions as morphisms.
@@ -519,50 +543,93 @@ To be a valid category 3 rules must be met:
 
 Since these rules govern composition at very abstract level, category theory is great at uncovering new ways of composing things.
 
+```python
+>>> from typing import Callable
+>>>
+>>> def identity[_TypeA](value: _TypeA) -> _TypeA:
+...     return value
+...
+>>> def compose[_TypeA, _TypeB, _TypeC](
+...     first: Callable[[_TypeA], _TypeB],
+...     second: Callable[[_TypeB], _TypeC],
+... ) -> Callable[[_TypeA], _TypeC]:
+...     return lambda inner: second(first(inner))
+...
+>>> to_str = str
+>>> length = len
+>>> assert compose(identity, to_str)(5) == '5'
+>>> assert compose(to_str, length)([1, 2, 3]) == 3
+>>> assert compose(identity, compose(to_str, length))([0]) == 1
+```
+
 __Further reading__
 
 * [Category Theory for Programmers](https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/)
 
-## Value (TODO)
+## Value
 
 Anything that can be assigned to a variable.
 
 ```python
-# TODO
+>>> number = 7
+>>> text = 'hello'
+>>> items = [1, 2, 3]
+>>> assert number * 2 == 14
+>>> assert text.upper() == 'HELLO'
+>>> assert sum(items) == 6
 ```
 
-## Constant (TODO)
+## Constant
 
 A variable that cannot be reassigned once defined.
 
 ```python
-# TODO
+>>> from typing import Final
+>>>
+>>> PI: Final[float] = 3.14159
+>>> assert round(PI * 2, 2) == 6.28
 ```
 
-Constants are [referentially transparent](#referential-transparency-todo). That is, they can be replaced with the values that they represent without affecting the result.
+Constants are [referentially transparent](#referential-transparency). That is, they can be replaced with the values that they represent without affecting the result.
 
 ```python
-# TODO
+>>> radius = 3
+>>> area = PI * radius ** 2
+>>> assert area == PI * (radius ** 2)
 ```
 
-## Lift (TODO)
+## Lift
 
 Lifting is when you take a value and put it into an object like a [Functor](#functor). If you lift a function into an [Applicative Functor](#applicative-functor) then you can make it work on values that are also in that functor.
 
 Some implementations have a function called `lift`, or `liftA2` to make it easier to run functions on functors.
 
 ```python
-# TODO
+>>> def lift[_LiftType](value: _LiftType) -> list[_LiftType]:
+...     return [value]
+...
+>>> assert list(map(abs, lift(-2))) == [2]
 ```
 
 Lifting a one-argument function and applying it does the same thing as `map`.
 
 ```python
-# TODO
+>>> from typing import Callable, Iterable
+>>>
+>>> def lift_a2[_Left, _Right, _ResultType](
+...     function: Callable[[_Left, _Right], _ResultType],
+... ) -> Callable[[Iterable[_Left], Iterable[_Right]], list[_ResultType]]:
+...     return lambda first, second: [
+...         function(left, right) for left, right in zip(first, second)
+...     ]
+...
+>>> add = lambda left, right: left + right
+>>> lifted_add = lift_a2(add)
+>>> assert lifted_add([1, 2], [10]) == [11, 12]
 ```
 
 
-## Referential Transparency (TODO)
+## Referential Transparency
 
 An expression that can be replaced with its value without changing the
 behavior of the program is said to be referentially transparent.
@@ -570,45 +637,81 @@ behavior of the program is said to be referentially transparent.
 Say we have function greet:
 
 ```python
-# TODO
+>>> def greet(name: str) -> str:
+...     return f'Hello, {name}'
+...
+>>> greeting = greet('Alice')
+>>> assert greeting == 'Hello, Alice'
+>>> assert f'{greet("Alice")}!' == f'{greeting}!'
 ```
 
-## Equational Reasoning (TODO)
+## Equational Reasoning
 
 When an application is composed of expressions and devoid of side effects, truths about the system can be derived from the parts.
 
-## Lambda (TODO)
+```python
+>>> def square(number: int) -> int:
+...     return number * number
+...
+>>> def double(number: int) -> int:
+...     return number * 2
+...
+>>> assert square(double(3)) == square(6)
+>>> assert square(6) == 36
+```
+
+## Lambda
 
 An anonymous function that can be treated like a value.
 
-```python 
-def f(a):
-  return a + 1
-
-lambda a: a + 1
+```python
+>>> def f(a: int) -> int:
+...     return a + 1
+...
+>>> assert f(1) == (lambda a: a + 1)(1)
 ```
+
 Lambdas are often passed as arguments to Higher-Order functions.
 
 ```python
-List([1, 2]).map(lambda x: x + 1) # [2, 3]
+>>> assert list(map(lambda x: x + 1, [1, 2])) == [2, 3]
 ```
 
 You can assign a lambda to a variable.
 
 ```python
-add1 = lambda a: a + 1
+>>> add1 = lambda a: a + 1
+>>> assert add1(4) == 5
 ```
 
-## Lambda Calculus (TODO)
+## Lambda Calculus
 
 A branch of mathematics that uses functions to create a [universal model of computation](https://en.wikipedia.org/wiki/Lambda_calculus).
 
-## Lazy evaluation (TODO)
+```python
+>>> true = lambda a: lambda b: a
+>>> false = lambda a: lambda b: b
+>>> and_ = lambda first: lambda second: first(second)(first)
+>>>
+>>> assert and_(true)(false) is false
+>>> assert and_(true)(true) is true
+```
+
+## Lazy evaluation
 
 Lazy evaluation is a call-by-need evaluation mechanism that delays the evaluation of an expression until its value is needed. In functional languages, this allows for structures like infinite lists, which would not normally be available in an imperative language where the sequencing of commands is significant.
 
 ```python
-# TODO
+>>> def naturals():
+...     current = 0
+...     while True:
+...         yield current
+...         current += 1
+...
+>>> numbers = naturals()
+>>> assert next(numbers) == 0
+>>> assert next(numbers) == 1
+>>> assert next(numbers) == 2
 ```
 
 ## Functor
@@ -631,18 +734,15 @@ Sometimes `Functor` can be called `Mappable` to its `.map` method.
 You can have a look at the real-life [`Functor` interface](https://github.com/dry-python/returns/blob/master/returns/interfaces/mappable.py):
 
 ```python
->>> from typing import Callable, TypeVar
+>>> from typing import Callable
 >>> from returns.interfaces.mappable import Mappable1 as Functor
 >>> from returns.primitives.hkt import SupportsKind1
 
->>> _FirstType = TypeVar('_FirstType')
->>> _NewFirstType = TypeVar('_NewFirstType')
-
->>> class Box(SupportsKind1['Box', _FirstType], Functor[_FirstType]):
+>>> class Box[_FirstType](SupportsKind1['Box', _FirstType], Functor[_FirstType]):
 ...     def __init__(self, inner_value: _FirstType) -> None:
 ...         self._inner_value = inner_value
 ...
-...     def map(
+...     def map[_NewFirstType](
 ...         self,
 ...         function: Callable[[_FirstType], _NewFirstType],
 ...     ) -> 'Box[_NewFirstType]':
@@ -696,199 +796,390 @@ Tuples, lists, and strings are also monoids:
 ```
 
 
-## Monad (TODO)
+## Monad
 
 A monad is an [Applicative Functor](#applicative-functor) with `bind` method. 
 `bind` is like [`map`](#functor) except it un-nests the resulting nested object.
 
 ```python
-# TODO
+>>> from returns.result import Result, Success, Failure
+>>>
+>>> def safe_divide(dividend: int, divisor: int) -> Result[float, Exception]:
+...     if divisor == 0:
+...         return Failure(ZeroDivisionError('Cannot divide by zero'))
+...     return Success(dividend / divisor)
+...
+>>> assert Success(10).bind(lambda value: safe_divide(value, 2)) == Success(5.0)
+>>> failed_result = Success(10).bind(lambda value: safe_divide(value, 0))
+>>> assert isinstance(failed_result, Failure)
 ```
 
 `of` is also known as `return` in other functional languages.
 `chain` is also known as `flatmap` and `bind` in other languages.
 
-## Comonad (TODO)
+## Comonad
 
 An object that has `extract` and `extend` functions.
 
 ```python
-# TODO
+>>> from typing import Callable, Generic
+>>>
+>>> class CoIdentity[_CoValue](Generic[_CoValue]):
+...     def __init__(self, value: _CoValue) -> None:
+...         self._value = value
+...
+...     def extract(self) -> _CoValue:
+...         return self._value
+...
+...     def extend[_NewCoValue](
+...         self,
+...         function: Callable[['CoIdentity[_CoValue]'], _NewCoValue],
+...     ) -> 'CoIdentity[_NewCoValue]':
+...         return CoIdentity(function(self))
+...
+>>> square_context = CoIdentity(5).extend(lambda context: context.extract() ** 2)
+>>> assert square_context.extract() == 25
 ```
 
-## Morphism (TODO)
+## Morphism
 
 A transformation function.
 
-### Endomorphism (TODO)
+### Endomorphism
 
 A function where the input type is the same as the output.
 
 ```python
-# uppercase :: String -> String
-uppercase = lambda s: s.upper() 
-
-# decrement :: Number -> Number
-decrement = lambda x: x - 1
+>>> uppercase = lambda text: text.upper()
+>>> decrement = lambda number: number - 1
+>>> assert uppercase('hi') == 'HI'
+>>> assert decrement(4) == 3
 ```
 
-### Isomorphism (TODO)
+### Isomorphism
 
 A pair of transformations between 2 types of objects that is structural in nature and no data is lost.
 
 ```python
-# TODO
+>>> def to_bytes(text: str) -> bytes:
+...     return text.encode('utf-8')
+...
+>>> def from_bytes(raw: bytes) -> str:
+...     return raw.decode('utf-8')
+...
+>>> assert from_bytes(to_bytes('hello')) == 'hello'
 ```
 
-### Homomorphism (TODO)
+### Homomorphism
 
 A homomorphism is just a structure preserving map. In fact, a functor is just a homomorphism between categories as it preserves the original category's structure under the mapping.
 
 ```python
-# TODO
+>>> numbers = [1, 2, 3]
+>>> as_tuple = tuple(numbers)
+>>> assert as_tuple == (1, 2, 3)
 ```
 
-### Catamorphism (TODO)
+### Catamorphism
 
 A `reduce_right` function that applies a function against an accumulator and each value of the array (from right-to-left) to reduce it to a single value.
 
 ```python
-# TODO
+>>> from typing import Callable, Iterable
+>>>
+>>> def fold_right[_FoldType, _AccType](
+...     items: Iterable[_FoldType],
+...     initial: _AccType,
+...     function: Callable[[_FoldType, _AccType], _AccType],
+... ) -> _AccType:
+...     result = initial
+...     for item in reversed(list(items)):
+...         result = function(item, result)
+...     return result
+...
+>>> assert fold_right([1, 2, 3], 0, lambda item, acc: item + acc) == 6
 ```
 
-### Anamorphism (TODO)
+### Anamorphism
 
 An `unfold` function. An `unfold` is the opposite of `fold` (`reduce`). It generates a list from a single value.
 
 ```python
-# TODO
+>>> from typing import Callable
+>>>
+>>> def unfold(seed: int, stop: Callable[[int], bool]) -> list[int]:
+...     values = []
+...     current = seed
+...     while not stop(current):
+...         values.append(current)
+...         current += 1
+...     return values
+...
+>>> assert unfold(1, lambda value: value > 3) == [1, 2, 3]
 ```
 
-### Hylomorphism (TODO)
+### Hylomorphism
 
 The combination of anamorphism and catamorphism.
 
-### Paramorphism (TODO)
+```python
+>>> assert fold_right(unfold(1, lambda value: value > 3), 0, lambda item, acc: item + acc) == 6
+```
+
+### Paramorphism
 
 A function just like `reduce_right`. However, there's a difference:
 
 In paramorphism, your reducer's arguments are the current value, the reduction of all previous values, and the list of values that formed that reduction.
 
 ```python
-# TODO
+>>> from typing import Callable
+>>>
+>>> def para(
+...     items: list[int],
+...     initial: int,
+...     function: Callable[[int, list[int], int], int],
+... ) -> int:
+...     if not items:
+...         return initial
+...     head, *tail = items
+...     return function(head, tail, para(tail, initial, function))
+...
+>>> assert para([1, 2, 3], 0, lambda current, rest, acc: acc + current + len(rest)) == 9
 ```
 
-### Apomorphism (TODO)
+### Apomorphism
 
 it's the opposite of paramorphism, just as anamorphism is the opposite of catamorphism. Whereas with paramorphism, you combine with access to the accumulator and what has been accumulated, apomorphism lets you `unfold` with the potential to return early.
 
-## Setoid (TODO)
+```python
+>>> from typing import Callable
+>>>
+>>> def apo(seed: int, step: Callable[[int], tuple[int, int | None]]):
+...     result = []
+...     current = seed
+...     while current is not None:
+...         value, current = step(current)
+...         result.append(value)
+...     return result
+...
+>>> assert apo(0, lambda number: (number, None if number >= 2 else number + 1)) == [0, 1, 2]
+```
+
+## Setoid
 
 An object that has an `equals` function which can be used to compare other objects of the same type.
 
 Make array a setoid:
 
 ```python 
-# TODO
+>>> class Point:
+...     def __init__(self, x: int, y: int) -> None:
+...         self.x = x
+...         self.y = y
+...
+...     def equals(self, other: 'Point') -> bool:
+...         return self.x == other.x and self.y == other.y
+...
+>>> assert Point(1, 2).equals(Point(1, 2))
+>>> assert not Point(1, 2).equals(Point(2, 1))
 ```
 
-## Semigroup (TODO)
+## Semigroup
 
 An object that has a `concat` function that combines it with another object of the same type.
 
 ```python
-# TODO
+>>> def concat_numbers(first: int, second: int) -> int:
+...     return first + second
+...
+>>> assert concat_numbers(1, 2) == 3
+>>> assert concat_numbers(concat_numbers(1, 2), 3) == concat_numbers(1, concat_numbers(2, 3))
 ```
 
-## Foldable (TODO)
+## Foldable
 
 An object that has a `reduce` function that applies a function against an accumulator and each element in the array (from left to right) to reduce it to a single value.
 
 ```python
-# TODO
+>>> from functools import reduce
+>>> assert reduce(lambda acc, value: acc + value, [1, 2, 3], 0) == 6
 ```
 
-## Lens (TODO)
+## Lens
 
 A lens is a structure (often an object or function) that pairs a getter and a non-mutating setter for some other data
 structure.
 
 ```python
-# TODO
+>>> def lens(key):
+...     return (
+...         lambda data: data[key],
+...         lambda value, data: {**data, key: value},
+...     )
+...
+>>> get_name, set_name = lens('name')
+>>> person = {'name': 'Jane', 'age': 30}
+>>> assert get_name(person) == 'Jane'
+>>> assert set_name('John', person) == {'name': 'John', 'age': 30}
 ```
 
 Lenses are also composable. This allows easy immutable updates to deeply nested data.
 
 ```python
-# TODO
+>>> address_lens = lens('address')
+>>> city_lens = lens('city')
+>>>
+>>> def compose_lens(left, right):
+...     left_get, left_set = left
+...     right_get, right_set = right
+...     return (
+...         lambda data: right_get(left_get(data)),
+...         lambda value, data: left_set(right_set(value, left_get(data)), data),
+...     )
+...
+>>> address_city_lens = compose_lens(address_lens, city_lens)
+>>> person_with_address = {'name': 'Jane', 'address': {'city': 'Oslo'}}
+>>> composed_get, composed_set = address_city_lens
+>>> assert composed_get(person_with_address) == 'Oslo'
+>>> assert composed_set('Berlin', person_with_address) == {
+...     'name': 'Jane',
+...     'address': {'city': 'Berlin'},
+... }
 ```
 
-## Type Signatures (TODO)
+## Type Signatures
+
+Type signatures describe the types a function accepts and returns.
+
+```python
+>>> def head(items: list[int]) -> int:
+...     return items[0]
+...
+>>> assert head([1, 2, 3]) == 1
+```
 
 __Further reading__
 * [Ramda's type signatures](https://github.com/ramda/ramda/wiki/Type-Signatures)
 * [Mostly Adequate Guide](https://drboolean.gitbooks.io/mostly-adequate-guide/content/ch7.html#whats-your-type)
 * [What is Hindley-Milner?](http://stackoverflow.com/a/399392/22425) on Stack Overflow
 
-## Algebraic data type (TODO)
+## Algebraic data type
 
-A composite type made from putting other types together. Two common classes of algebraic types are [sum](#sum-type-todo) and [product](#product-type-todo).
+A composite type made from putting other types together. Two common classes of algebraic types are [sum](#sum-type) and [product](#product-type).
 
-### Sum type (TODO)
+### Sum type
 
 A Sum type is the combination of two types together into another one. It is called sum because the number of possible values in the result type is the sum of the input types.
 
 ```python
-# TODO
+>>> from dataclasses import dataclass
+>>> from typing import Union
+>>>
+>>> @dataclass
+... class Success:
+...     value: int
+...
+>>> @dataclass
+... class Failure:
+...     message: str
+...
+>>> Response = Union[Success, Failure]
+>>>
+>>> def render(response: Response) -> str:
+...     if isinstance(response, Success):
+...         return f'value: {response.value}'
+...     return f'error: {response.message}'
+...
+>>> assert render(Success(2)) == 'value: 2'
+>>> assert render(Failure('no data')) == 'error: no data'
 ```
 
 Sum types are sometimes called union types, discriminated unions, or tagged unions.
 
 The [sumtypes](https://github.com/radix/sumtypes/) library in Python helps with defining and using union types.
 
-### Product type (TODO)
+### Product type
 
 A __product__ type combines types together in a way you're probably more familiar with:
 
 ```python
-# TODO
+>>> from dataclasses import dataclass
+>>>
+>>> @dataclass
+... class User:
+...     username: str
+...     active: bool
+...
+>>> assert User('alice', True).username == 'alice'
 ```
 
 See also [Set theory](https://en.wikipedia.org/wiki/Set_theory).
 
-## Option (TODO)
+## Option
 
-Option is a [sum type](#sum-type-todo) with two cases often called `Some` and `None`.
+Option is a [sum type](#sum-type) with two cases often called `Some` and `None`.
 
 Option is useful for composing functions that might not return a value.
 
 ```python
-# TODO
+>>> from returns.maybe import Maybe, Nothing, Some
+>>>
+>>> def safe_head(items: list[int]) -> Maybe[int]:
+...     if not items:
+...         return Nothing
+...     return Some(items[0])
+...
+>>> assert safe_head([1, 2, 3]) == Some(1)
+>>> assert safe_head([]) is Nothing
 ```
 
 `Option` is also known as `Maybe`. `Some` is sometimes called `Just`. `None` is sometimes called `Nothing`.
 
-## Function (TODO)
+## Function
 
-A __function__ `f :: A => B` is an expression - often called arrow or lambda expression - with __exactly one (immutable)__ parameter of type `A` and __exactly one__ return value of type `B`. That value depends entirely on the argument, making functions context-independent, or [referentially transparent](#referential-transparency-todo). What is implied here is that a function must not produce any hidden [side effects](#side-effects) - a function is always [pure](#purity), by definition. These properties make functions pleasant to work with: they are entirely deterministic and therefore predictable. Functions enable working with code as data, abstracting over behaviour:
-
-```python
-# TODO
-```
-
-## Partial function (TODO)
-
-A partial function is a [function](#function-todo) which is not defined for all arguments - it might return an unexpected result or may never terminate. Partial functions add cognitive overhead, they are harder to reason about and can lead to runtime errors. Some examples:
+A __function__ `f :: A => B` is an expression - often called arrow or lambda expression - with __exactly one (immutable)__ parameter of type `A` and __exactly one__ return value of type `B`. That value depends entirely on the argument, making functions context-independent, or [referentially transparent](#referential-transparency). What is implied here is that a function must not produce any hidden [side effects](#side-effects) - a function is always [pure](#purity), by definition. These properties make functions pleasant to work with: they are entirely deterministic and therefore predictable. Functions enable working with code as data, abstracting over behaviour:
 
 ```python
-# TODO
+>>> from typing import Callable
+>>>
+>>> def add_one(value: int) -> int:
+...     return value + 1
+...
+>>> def apply(function: Callable[[int], int], value: int) -> int:
+...     return function(value)
+...
+>>> assert apply(add_one, 1) == 2
 ```
 
-### Dealing with partial functions (TODO)
+## Partial function
+
+A partial function is a [function](#function) which is not defined for all arguments - it might return an unexpected result or may never terminate. Partial functions add cognitive overhead, they are harder to reason about and can lead to runtime errors. Some examples:
+
+```python
+>>> def head(items: list[int]) -> int:
+...     return items[0]
+...
+>>> assert head([1, 2, 3]) == 1
+>>> try:
+...     head([])
+... except IndexError:
+...     pass
+```
+
+### Dealing with partial functions
 
 Partial functions are dangerous as they need to be treated with great caution. You might get an unexpected (wrong) result or run into runtime errors. Sometimes a partial function might not return at all. Being aware of and treating all these edge cases accordingly can become very tedious.
-Fortunately a partial function can be converted to a regular (or total) one. We can provide default values or use guards to deal with inputs for which the (previously) partial function is undefined. Utilizing the [`Option`](#option-todo) type, we can yield either `Some(value)` or `None` where we would otherwise have behaved unexpectedly:
+Fortunately a partial function can be converted to a regular (or total) one. We can provide default values or use guards to deal with inputs for which the (previously) partial function is undefined. Utilizing the [`Option`](#option) type, we can yield either `Some(value)` or `None` where we would otherwise have behaved unexpectedly:
 
 ```python
-# TODO
+>>> from returns.maybe import Maybe, Nothing, Some
+>>>
+>>> def safe_head(items: list[int]) -> Maybe[int]:
+...     if not items:
+...         return Nothing
+...     return Some(items[0])
+...
+>>> assert safe_head([1, 2, 3]) == Some(1)
+>>> assert safe_head([]) is Nothing
 ```
