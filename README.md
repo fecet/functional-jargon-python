@@ -619,11 +619,11 @@ Lifting is when you take a value and put it into an object like a [Functor](#fun
 Some implementations have a function called `lift`, or `liftA2` to make it easier to run functions on functors.
 
 ```python
->>> from typing import List, TypeVar
+>>> from typing import TypeVar
 >>>
 >>> _LiftType = TypeVar('_LiftType')
 >>>
->>> def lift(value: _LiftType) -> List[_LiftType]:
+>>> def lift(value: _LiftType) -> list[_LiftType]:
 ...     return [value]
 ...
 >>> assert list(map(abs, lift(-2))) == [2]
@@ -632,7 +632,7 @@ Some implementations have a function called `lift`, or `liftA2` to make it easie
 Lifting a one-argument function and applying it does the same thing as `map`.
 
 ```python
->>> from typing import Callable, Iterable, List, TypeVar
+>>> from typing import Callable, Iterable, TypeVar
 >>>
 >>> _Left = TypeVar('_Left')
 >>> _Right = TypeVar('_Right')
@@ -640,7 +640,7 @@ Lifting a one-argument function and applying it does the same thing as `map`.
 >>>
 >>> def lift_a2(
 ...     function: Callable[[_Left, _Right], _ResultType],
-... ) -> Callable[[Iterable[_Left], Iterable[_Right]], List[_ResultType]]:
+... ) -> Callable[[Iterable[_Left], Iterable[_Right]], list[_ResultType]]:
 ...     return lambda first, second: [
 ...         function(left, right) for left, right in zip(first, second)
 ...     ]
@@ -936,9 +936,9 @@ A `reduce_right` function that applies a function against an accumulator and eac
 An `unfold` function. An `unfold` is the opposite of `fold` (`reduce`). It generates a list from a single value.
 
 ```python
->>> from typing import Callable, List
+>>> from typing import Callable
 >>>
->>> def unfold(seed: int, stop: Callable[[int], bool]) -> List[int]:
+>>> def unfold(seed: int, stop: Callable[[int], bool]) -> list[int]:
 ...     values = []
 ...     current = seed
 ...     while not stop(current):
@@ -964,12 +964,12 @@ A function just like `reduce_right`. However, there's a difference:
 In paramorphism, your reducer's arguments are the current value, the reduction of all previous values, and the list of values that formed that reduction.
 
 ```python
->>> from typing import Callable, List
+>>> from typing import Callable
 >>>
 >>> def para(
-...     items: List[int],
+...     items: list[int],
 ...     initial: int,
-...     function: Callable[[int, List[int], int], int],
+...     function: Callable[[int, list[int], int], int],
 ... ) -> int:
 ...     if not items:
 ...         return initial
@@ -1084,9 +1084,7 @@ Lenses are also composable. This allows easy immutable updates to deeply nested 
 Type signatures describe the types a function accepts and returns.
 
 ```python
->>> from typing import List
->>>
->>> def head(items: List[int]) -> int:
+>>> def head(items: list[int]) -> int:
 ...     return items[0]
 ...
 >>> assert head([1, 2, 3]) == 1
@@ -1156,10 +1154,9 @@ Option is a [sum type](#sum-type) with two cases often called `Some` and `None`.
 Option is useful for composing functions that might not return a value.
 
 ```python
->>> from typing import List
 >>> from returns.maybe import Maybe, Nothing, Some
 >>>
->>> def safe_head(items: List[int]) -> Maybe[int]:
+>>> def safe_head(items: list[int]) -> Maybe[int]:
 ...     if not items:
 ...         return Nothing
 ...     return Some(items[0])
@@ -1191,9 +1188,7 @@ A __function__ `f :: A => B` is an expression - often called arrow or lambda exp
 A partial function is a [function](#function) which is not defined for all arguments - it might return an unexpected result or may never terminate. Partial functions add cognitive overhead, they are harder to reason about and can lead to runtime errors. Some examples:
 
 ```python
->>> from typing import List
->>>
->>> def head(items: List[int]) -> int:
+>>> def head(items: list[int]) -> int:
 ...     return items[0]
 ...
 >>> assert head([1, 2, 3]) == 1
@@ -1209,10 +1204,9 @@ Partial functions are dangerous as they need to be treated with great caution. Y
 Fortunately a partial function can be converted to a regular (or total) one. We can provide default values or use guards to deal with inputs for which the (previously) partial function is undefined. Utilizing the [`Option`](#option) type, we can yield either `Some(value)` or `None` where we would otherwise have behaved unexpectedly:
 
 ```python
->>> from typing import List
 >>> from returns.maybe import Maybe, Nothing, Some
 >>>
->>> def safe_head(items: List[int]) -> Maybe[int]:
+>>> def safe_head(items: list[int]) -> Maybe[int]:
 ...     if not items:
 ...         return Nothing
 ...     return Some(items[0])
